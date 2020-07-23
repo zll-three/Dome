@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zll.mapper.UserMapper">
+       <!-- 查询用户的全部信息 -->
+        <resultMap type="User" id="userlist">
+            <result property="userId" column="userId"/>
+            <result property="userName" column="userName"/>
+         <result property="uId" column="uId"/>
+                 <collection property="roleList" ofType="Role">
+               <id property="roleId" column="roleId"/>
+                <result property="roleName" column="roleName"/>
+          <result property="rId" column="rId"/>
+             </collection>
+            </resultMap>
+       <select id="getUserList" resultMap="userlist">
+       SELECT u.*,r.* FROM `user` u ,`role` r ,`ur` c
+       WHERE u.`userId`=c.`uId` AND r.`roleId`=c.`rId`
+       <if test="userId>0">AND u.`userId`=#{userId}</if>
+       </select>
+       
+       <!-- 解除用户与角色关联 -->
+       <delete id="delUser">
+          delete from ur where `uId`=#{userId} 
+       </delete>
+       <!-- 查询所有用户 -->
+       <select id="getRoleList" resultType="Role">
+       select * from role
+       </select>
+       <!-- 修改用户信息 -->
+       <update id="upUser">
+               update user 
+               <set>
+               <if test="userName!=null">userName=#{userName}</if>
+               </set>
+               where userId=#{userId}
+         </update>
+         <!-- 修改绑定 -->
+          <update id="upUr">
+               update ur set uId=#{userId} where rId=#{roleId}
+         </update>
+             <!-- 获取到user最后一次插入的数据，并返回一个int型的值 -->
+<select id="selectLastId" resultType="Integer">
+	select LAST_INSERT_ID()
+    </select>
+         <!-- 增加用户 -->
+         <insert id="addUser" parameterType="User">
+         <selectKey resultType="Integer" order="AFTER" keyProperty="userId">
+           SELECT LAST_INSERT_ID()
+     	</selectKey>
+           INSERT INTO user (userName)
+            VALUES(#{userName})
+           
+         </insert>
+         <insert id="addUr">
+          
+          INSERT INTO ur (uId,rId)
+            VALUES(#{userId},#{roleId})
+         </insert>
+</mapper>
